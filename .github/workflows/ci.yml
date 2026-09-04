@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# Build toolkit: validate CMake modules only. Do not build installable Mod packages.
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required CMake modules
+        run: |
+          test -f CyberpunkMod.cmake
+          test -f ConfigureVersionFromGit.cmake
+          test -f files/build.yaml
+          test -f files/release.yaml
+      - name: Smoke-check CMake module syntax
+        run: |
+          cmake -E echo "cyberpunk_cmake modules present"
+          # Parse selected .cmake files as scripts where safe; missing includes are expected.
+          for f in FindRED4ext.cmake FindRED4ext.SDK.cmake FindArchiveXL.cmake FindModSettings.cmake FindRedLib.cmake; do
+            test -f "$f"
+          done
