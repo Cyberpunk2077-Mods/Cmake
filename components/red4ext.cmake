@@ -63,8 +63,9 @@ macro(configure_red4ext)
   find_package(RED4ext)
   find_package(RED4ext.SDK)
   print_rel_dir("RED4ext.SDK:" ${MOD_RED4EXT_SDK_DIR})
-  
-  list(APPEND CMAKE_MODULE_PATH "${MOD_RED4EXT_SDK_DIR}/cmake")
+
+  # Prefer cyberpunk_cmake's GetGameVersion (SDK no longer ships it on Api v1 pins).
+  list(APPEND CMAKE_MODULE_PATH "${CYBERPUNK_CMAKE_MODULE_PATH}" "${MOD_RED4EXT_SDK_DIR}/cmake")
   include(GetGameVersion)
 
   if(DEFINED GITHUB_ENV AND ${PROJECT_IS_TOP_LEVEL})
