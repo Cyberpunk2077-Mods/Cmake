@@ -17,10 +17,10 @@
 */
 
 struct ModModule {
-  virtual void Load(const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle){};
+  virtual void Load(const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle){};
   virtual void RegisterTypes(){};
   virtual void PostRegisterTypes(){};
-  virtual void Unload(const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle){};
+  virtual void Unload(const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle){};
 };
 
 class IModModuleHook : ModModule {
@@ -30,7 +30,7 @@ public:
   void *m_hook;
   void **m_original;
 
-  virtual void Load(const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle) override {
+  virtual void Load(const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle) override {
     #ifdef SPDLOG_COMPILED_LIB
       spdlog::info("Attaching {} at 0x{:X}", m_name, m_address);
     #endif
@@ -41,15 +41,15 @@ public:
     }
   };
 
-  virtual void Unload(const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle) override {
+  virtual void Unload(const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle) override {
     aSdk->hooking->Detach(aHandle, RED4EXT_OFFSET_TO_ADDR(this->m_address));
   };
 };
 
 class ModModuleFactory {
   //std::map<std::string, std::function<ModModule *()>> s_creators;
-  std::vector<std::function<void(const RED4ext::Sdk *, RED4ext::PluginHandle)>> s_loads;
-  std::vector<std::function<void(const RED4ext::Sdk *, RED4ext::PluginHandle)>> s_unloads;
+  std::vector<std::function<void(const RED4ext::v1::Sdk *, RED4ext::v1::PluginHandle)>> s_loads;
+  std::vector<std::function<void(const RED4ext::v1::Sdk *, RED4ext::v1::PluginHandle)>> s_unloads;
   std::vector<std::function<void()>> s_registers;
   std::vector<std::function<void()>> s_postRegisters;
   std::vector<IModModuleHook*> s_hooks;
@@ -64,9 +64,9 @@ public:
     //modules.emplace_back(new T());
     //s_creators.insert({name, []() -> ModModule * { return new T(); }});
     s_loads.emplace_back(
-        [](const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle) -> void { (new T())->Load(aSdk, aHandle); });
+        [](const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle) -> void { (new T())->Load(aSdk, aHandle); });
     s_unloads.emplace_back(
-        [](const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle) -> void { (new T())->Unload(aSdk, aHandle); });
+        [](const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle) -> void { (new T())->Unload(aSdk, aHandle); });
     s_registers.emplace_back([]() -> void { (new T())->RegisterTypes(); });
     s_postRegisters.emplace_back([]() -> void { (new T())->PostRegisterTypes(); });
     //s_registers.insert({name, &T::RegisterTypes});
@@ -85,7 +85,7 @@ public:
   //  return (it->second)();
   //}
 
-  void Load(const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle) {
+  void Load(const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle) {
     for (const auto &load : s_loads) {
       load(aSdk, aHandle);
     }
@@ -94,7 +94,7 @@ public:
     }
   }
 
-  void Unload(const RED4ext::Sdk *aSdk, RED4ext::PluginHandle aHandle) {
+  void Unload(const RED4ext::v1::Sdk *aSdk, RED4ext::v1::PluginHandle aHandle) {
     for (const auto &unload : s_unloads) {
       unload(aSdk, aHandle);
     }
